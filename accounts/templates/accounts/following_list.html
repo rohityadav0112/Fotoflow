@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style>
+    .container {
+        max-width: 600px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    .header {
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .user-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .user-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .user-item img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .user-item a {
+        text-decoration: none;
+        color: #262626;
+        font-weight: bold;
+    }
+
+    .user-item a:hover {
+        text-decoration: underline;
+    }
+
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: #0095f6;
+        font-weight: bold;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="header">{{ user.username }} is Following</h2>
+    
+    {% if following %}
+        <ul class="user-list">
+            {% for follow in following %}
+                <li class="user-item">
+                    <img src="{{ follow.following.profile.profile_picture.url }}" alt="{{ follow.following.username }}">
+                    <a href="{% url 'search_profile_page' follow.following.username %}">{{ follow.following.username }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p style="text-align: center;">Not following anyone yet.</p>
+    {% endif %}
+
+    <a href="{% url 'search_profile_page' user.username %}" class="back-link">← Back to Profile</a>
+</div>
+{% endblock %}

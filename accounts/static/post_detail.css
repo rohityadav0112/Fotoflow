@@ -1,0 +1,120 @@
+
+.post-container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 25px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.post-meta {
+    color: #6c757d;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.media-container img,
+.media-container video {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 15px;
+    border-radius: 10px;
+}
+
+#like-btn {
+    border: none;
+    background-color: transparent;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.comment-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    align-items: flex-start;
+}
+
+#comment-input {
+    flex-grow: 1;
+    padding: 10px;
+    resize: vertical;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+#send-comment {
+    padding: 10px 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#comments-section {
+    margin-top: 25px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+.comment {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #ccc;
+}
+
+.replies {
+    padding-left: 20px;
+    margin-top: 10px;
+}
+
+.reply {
+    margin-bottom: 8px;
+}
+
+.reply-input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.send-reply {
+    margin-top: 5px;
+    padding: 6px 12px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.actions {
+    margin-top: 30px;
+    font-size: 0.95rem;
+}
+
+@media (min-width: 992px) {
+    .post-container {
+        margin-top: 40px;
+        padding: 30px;
+    }
+
+    #comment-input, .reply-input {
+        font-size: 1rem;
+    }
+}

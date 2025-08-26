@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }}'s Followers{% endblock %}
+
+{% block css %}
+<style>
+    .followers-container {
+        max-width: 500px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .followers-list {
+        list-style: none;
+        padding: 0;
+    }
+    .follower-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+    }
+    .follower-item a {
+        text-decoration: none;
+        color: #262626;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    .profile-pic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: #3897f0;
+        text-decoration: none;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="followers-container">
+    <h2>{{ user.username }}'s Followers</h2>
+    
+    {% if followers %}
+        <ul class="followers-list">
+            {% for follow in followers %}
+                <li class="follower-item">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{{ follow.follower.profile.profile_picture.url }}" alt="Profile Picture" class="profile-pic">
+                        <a href="{% url 'search_profile_page' follow.follower.username %}">{{ follow.follower.username }}</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p style="text-align: center; color: #999;">No followers yet.</p>
+    {% endif %}
+
+    <a href="{% url 'search_profile_page' user.username %}" class="back-link">Back to Profile</a>
+</div>
+{% endblock %}

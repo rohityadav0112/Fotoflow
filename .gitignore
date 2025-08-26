@@ -1,0 +1,17 @@
+# Ignore environment files
+.env
+
+# Python-related ignores
+__pycache__/
+*.pyc
+
+# Django stuff
+db.sqlite3
+
+# Virtual environments
+venv/
+TweetEnv/
+
+# IDE/editor stuff
+.vscode/
+*.code-workspace

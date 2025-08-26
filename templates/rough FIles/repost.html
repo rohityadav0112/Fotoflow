@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Repost</h2>
+
+    <p><strong>Original Post by:</strong> {{ original_post.user.username }}</p>
+    <p>{{ original_post.caption }}</p>
+
+    <!-- Display any media files of the original post -->
+    {% for media in original_post.media.all %}
+        {% if media.is_image %}
+            <img src="{{ media.file.url }}" alt="Post Image" style="max-width: 100%; height: auto;">
+        {% elif media.is_video %}
+            <video controls style="max-width: 100%; height: auto;">
+                <source src="{{ media.file.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {% endif %}
+    {% empty %}
+        <p><em>No media available</em></p>
+    {% endfor %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Repost</button>
+    </form>
+
+    <a href="{% url 'home_page' %}">Cancel</a>
+{% endblock %}

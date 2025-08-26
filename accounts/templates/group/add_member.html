@@ -1,0 +1,9 @@
+<h2>Add Member to {{ group.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="username" placeholder="Enter username to add">
+    <button type="submit">Add</button>
+</form>
+
+<a href="{% url 'group_detail' group.id %}">Back</a>

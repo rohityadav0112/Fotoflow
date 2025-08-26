@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Posts with #{{ hashtag }}</h2>
+    {% for post in posts %}
+        <div>
+            <p><strong>{{ post.user.username }}</strong> - {{ post.created_at }}</p>
+            <p>{{ post.caption }}</p>
+            <a href="{% url 'post_detail' post.id %}">View Post</a>
+            <hr>
+        </div>
+    {% endfor %}
+{% endblock %}

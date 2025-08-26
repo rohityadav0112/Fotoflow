@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'login.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Login</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="error">{{ message }}</p>
+                {% endfor %}
+                {% endif %}
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <!-- Google Login Button -->
+                <a href="{% provider_login_url 'google' %}" class="google-btn"><img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo">
+                    Login with Google
+                </a>
+                <a href="{% provider_login_url 'github' %}" class="google-btn">github</a>
+                <p>Don't Have an Account<a href="{% url "register_page" %}">Register</a></p>
+                <a href="{% url "password_reset" %}" class="google-btn">password_reset</a>
+                
+            </div>
+{% endblock %}

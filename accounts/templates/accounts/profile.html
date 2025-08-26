@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+My Profile
+{% endblock %}
+
+{% block css %}
+<style>
+    body {
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        padding: 1rem;
+    }
+
+    .profile-container {
+        background-color: var(--bs-card-bg);
+        color: var(--bs-body-color);
+        border: 1px solid var(--bs-border-color-translucent);
+        padding: 2rem;
+        border-radius: 12px;
+        max-width: 600px;
+        margin: auto;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-container img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 1rem;
+    }
+
+    .follow-stats {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .follow-stats a {
+        text-decoration: none;
+        color: var(--bs-primary);
+        font-weight: 500;
+    }
+
+    .post {
+        background-color: var(--bs-card-bg);
+        border: 1px solid var(--bs-border-color-translucent);
+        padding: 1.5rem;
+        border-radius: 12px;
+        max-width: 700px;
+        margin: 1rem auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .media-container img,
+    .media-container video {
+        width: 100%;
+        border-radius: 8px;
+        margin-top: 1rem;
+        object-fit: cover;
+    }
+
+    .like-btn {
+        background: none;
+        border: none;
+        color: var(--bs-danger);
+        font-size: 1rem;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+
+    .comment-form {
+        margin-top: 1rem;
+    }
+
+    .comment-input,
+    .reply-input {
+        width: 100%;
+        border: 1px solid var(--bs-border-color-translucent);
+        border-radius: 8px;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+    }
+
+    .send-comment,
+    .send-reply {
+        background-color: var(--bs-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.4rem 1rem;
+        cursor: pointer;
+    }
+
+    .comments-section {
+        margin-top: 1rem;
+    }
+
+    .comment {
+        margin-bottom: 1rem;
+        padding: 0.5rem 0.8rem;
+        background-color: var(--bs-secondary-bg);
+        border-radius: 8px;
+    }
+
+    .reply {
+        margin-top: 0.5rem;
+        margin-left: 1rem;
+        padding: 0.4rem 0.6rem;
+        background-color: var(--bs-tertiary-bg);
+        border-radius: 6px;
+    }
+
+    .reply-btn {
+        background: none;
+        color: var(--bs-primary);
+        border: none;
+        font-size: 0.85rem;
+        cursor: pointer;
+        margin-top: 0.2rem;
+    }
+
+    a.button {
+        display: inline-block;
+        margin-top: 1rem;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        background-color: var(--bs-primary);
+        color: white;
+        border-radius: 6px;
+    }
+
+    hr {
+        border-color: var(--bs-border-color-translucent);
+        margin: 1rem 0;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>Welcome, {{ profile.user.username }}</h2>
+    <img src="{{ profile.profile_picture.url }}" alt="Profile Picture">
+    <p><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
+    <p><strong>Bio:</strong> {{ profile.bio }}</p>
+    <p><strong>Gender:</strong> {{ profile.get_gender_display }}</p>
+    <div class="follow-stats">
+        <a href="{% url 'followers_list' request.user.username %}">Followers: {{ followers_count }}</a>
+        <a href="{% url 'following_list' request.user.username %}">Following: {{ following_count }}</a>
+    </div>
+    <a href="{% url 'profile_update_page' %}">Edit Profile</a>
+</div>
+
+
+{% for post in  posts%}
+<dev class="post">
+    <p><strong><a href="{% url 'search_profile_page' post.user.username %}">{{ post.user.username }}</a></strong> - {{ post.created_at }}</p>
+
+    <p>
+        {% for word in post.caption.split %}
+            {% if word|first == "#" %}
+                <a href="{% url 'hashtag_posts' word|slice:'1:' %}">{{ word }}</a>
+            {% elif word|first == "@" %}
+                <a href="{% url 'search_profile_page' word|slice:'1:' %}">{{ word }}</a>
+            {% else %}
+                {{ word }}
+            {% endif %}
+        {% endfor %}
+    </p>
+
+    <div class="media-container">
+        {% for media in post.media.all %}
+            {% if media.is_image %}
+                <img src="{{ media.file.url }}" alt="Post Image">
+            {% elif media.is_video %}
+                <video controls>
+                    <source src="{{ media.file.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% endif %}
+        {% empty %}
+            <p><em>No media uploaded.</em></p>
+        {% endfor %}
+    </div>
+
+    <div class="post-container" data-post-id="{{ post.id }}">
+    
+        <p><strong>Likes:</strong> <span class="like-count">{{ post.likes.count }}</span></p>
+        <button type="button" class="like-btn" data-liked="{{ is_liked|yesno:"true,false" }}" data-post-id="{{ post.id }}">
+            {% if is_liked %}❤️ Unlike{% else %}🤍 Like{% endif %}
+        </button>
+    
+        <a href="{% url 'post_detail' post.id %}" class="button">View Post</a>
+        <hr>
+    
+        <div class="comment-form">
+            <textarea class="comment-input" placeholder="Add a comment..."></textarea>
+            <button class="send-comment" data-post-id="{{ post.id }}">Send</button>
+        </div>
+    
+        <div class="comments-section">
+            {% for comment in post.comments.all %}
+                {% if not comment.parent %}
+                    <div class="comment" data-comment-id="{{ comment.id }}">
+                        <p><strong>{{ comment.user.username }}</strong>: {{ comment.text }}</p>
+                        <button class="reply-btn" data-parent-id="{{ comment.id }}">Reply</button>
+                        <div class="replies">
+                            {% for reply in comment.replies.all %}
+                                <div class="reply" data-reply-id="{{ reply.id }}">
+                                    <p><strong>{{ reply.user.username }}</strong>: {{ reply.text }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    
+    </div>
+    {% endfor %}
+    
+    <!-- Global hidden template -->
+    <div id="reply-form-template" style="display: none;">
+        <textarea class="reply-input" placeholder="Write a reply..."></textarea>
+        <button class="send-reply">Send</button>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block WebSocketJS%}
+{% for post in posts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const username = "{{ request.user.username }}";
+    const postId = "{{ post.id }}";
+    const container = document.querySelector(`.post-container[data-post-id="{{ post.id }}"]`);
+    
+    const likeBtn = container.querySelector(".like-btn");
+    const likeCount = container.querySelector(".like-count");
+    const commentInput = container.querySelector(".comment-input");
+    const sendCommentBtn = container.querySelector(".send-comment");
+    const commentsSection = container.querySelector(".comments-section");
+
+    const replyFormTemplate = document.getElementById("reply-form-template");
+
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/post/${postId}/`);
+
+    // Like/Unlike
+    likeBtn.addEventListener("click", () => {
+        const isLiked = likeBtn.dataset.liked === "true";
+        socket.send(JSON.stringify({
+            type: "toggle_like",
+            username: username,
+            is_liked: isLiked
+        }));
+    });
+
+    // Send comment
+    sendCommentBtn.addEventListener("click", () => {
+        const text = commentInput.value.trim();
+        if (text.length > 0) {
+            socket.send(JSON.stringify({
+                type: "new_comment",
+                username: username,
+                text: text
+            }));
+            commentInput.value = "";
+        }
+    });
+
+    // Send reply (delegated listener)
+    commentsSection.addEventListener("click", (e) => {
+        if (e.target.classList.contains("reply-btn")) {
+            const commentId = e.target.dataset.parentId;
+            let commentDiv = e.target.closest(".comment");
+
+            if (!commentDiv.querySelector(".reply-input")) {
+                const replyForm = replyFormTemplate.cloneNode(true);
+                replyForm.style.display = "block";
+                commentDiv.appendChild(replyForm);
+
+                const replyInput = replyForm.querySelector(".reply-input");
+                const sendReplyBtn = replyForm.querySelector(".send-reply");
+
+                sendReplyBtn.addEventListener("click", () => {
+                    const replyText = replyInput.value.trim();
+                    if (replyText.length > 0) {
+                        socket.send(JSON.stringify({
+                            type: "new_reply",
+                            username: username,
+                            text: replyText,
+                            parent_id: commentId
+                        }));
+                        replyForm.remove();
+                    }
+                });
+            }
+        }
+    });
+
+    // Handle incoming WebSocket messages
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "like_update_broadcast") {
+            likeCount.textContent = data.total_likes;
+        }
+
+        if (data.type === "like_update_personal") {
+            likeBtn.dataset.liked = data.is_liked.toString();
+            likeBtn.textContent = data.is_liked ? "❤️ Unlike" : "🤍 Like";
+        }
+
+        else if (data.type === "new_comment") {
+            const comment = data.comment;
+            const commentHTML = `
+                <div class="comment" data-comment-id="${comment.id}">
+                    <p><strong>${comment.username}</strong>: ${comment.text}</p>
+                    <button class="reply-btn" data-parent-id="${comment.id}">Reply</button>
+                    <div class="replies"></div>
+                </div>
+            `;
+            commentsSection.insertAdjacentHTML("beforeend", commentHTML);
+        }
+
+        else if (data.type === "new_reply") {
+            const reply = data.reply;
+            const parentDiv = commentsSection.querySelector(`[data-comment-id="${reply.parent_id}"] .replies`);
+            const replyHTML = `
+                <div class="reply" data-reply-id="${reply.id}">
+                    <p><strong>${reply.username}</strong>: ${reply.text}</p>
+                </div>
+            `;
+            parentDiv.insertAdjacentHTML("beforeend", replyHTML);
+        }
+    };
+
+    socket.onclose = function() {
+        console.error("WebSocket closed unexpectedly");
+    };
+});
+</script>
+{% endfor %}
+
+{% endblock %}

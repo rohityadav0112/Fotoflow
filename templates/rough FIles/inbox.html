@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="inbox-container">
+    <h2 class="inbox-header">Inbox</h2>
+
+    {% if messages %}
+    <ul class="messages-list">
+        {% for message in messages %}
+        <li class="message-item">
+            <img src="{{ message.sender.profile.profile_picture.url }}" alt="Profile Picture" class="sender-avatar">
+            <a href="{% url 'view_message' message.id %}" class="message-link {% if not message.is_read %}unread{% endif %}">
+                {{ message.sender.username }} - {{ message.content|truncatewords:5 }}
+                <div class="message-time">{{ message.timestamp|date:"M d, Y H:i" }}</div>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>No messages yet.</p>
+        {% endif %}
+    </div>
+    {% endblock %}
+    
+    {% block css %}
+    <link rel="stylesheet" href="{% static 'inbox.css' %}">
+    {% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="message-container">
+    <div class="message-header">
+        <img src="{{ message.sender.profile.profile_picture.url }}" alt="Profile Picture" class="sender-avatar">
+        <h2 class="sender-name">{{ message.sender.username }}</h2>
+    </div>
+
+    <div class="message-box">
+        <div class="message-bubble">
+            <p class="message-content">{{ message.content }}</p>
+            <p class="message-time">{{ message.timestamp|date:"M d, Y H:i" }}</p>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <h3 class="replies-header">Replies</h3>
+    <div class="replies-container">
+        {% for reply in message.replies.all %}
+            <div class="reply-box {% if reply.sender == user %}sent-reply{% else %}received-reply{% endif %}">
+                <p class="reply-content"><strong>{{ reply.sender.username }}</strong>: {{ reply.content }}</p>
+                <p class="reply-time">{{ reply.timestamp|date:"M d, Y H:i" }}</p>
+            </div>
+        {% empty %}
+            <p class="no-replies">No replies yet.</p>
+        {% endfor %}
+    </div>
+
+    <hr class="divider">
+
+    <h3 class="reply-header">Reply</h3>
+    <form method="POST" class="reply-form">
+        {% csrf_token %}
+        <textarea name="content" rows="3" class="reply-input" placeholder="Write your reply..." required></textarea>
+        <button type="submit" class="reply-button">Send Reply</button>
+    </form>
+
+    {% if user == message.sender or user == message.receiver %}
+        <form method="POST" action="{% url 'view_message' message.id %}" class="delete-form">
+            {% csrf_token %}
+            <button type="submit" name="delete" class="delete-button">Delete Message</button>
+        </form>
+    {% endif %}
+
+    <a href="{% url 'inbox' %}" class="back-link">Back to Inbox</a>
+</div>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'viewmessage.css' %}">
+{% endblock %}

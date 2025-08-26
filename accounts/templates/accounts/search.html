@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style>
+    .search-container {
+        max-width: 500px;
+        margin: auto;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .search-header {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .search-input {
+        padding: 10px;
+        width: 250px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .search-button {
+        background-color: #0095f6;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 16px;
+    }
+
+    .search-button:hover {
+        background-color: #0077cc;
+    }
+
+    .user-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .user-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+    .user-card:hover {
+        background-color: #f7f7f7;
+    }
+
+    .user-img {
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+
+    .user-info {
+        text-align: left;
+    }
+
+    .user-link {
+        font-weight: bold;
+        font-size: 16px;
+        text-decoration: none;
+        color: black;
+    }
+
+    .user-link:hover {
+        text-decoration: underline;
+    }
+
+    .user-email {
+        margin: 0;
+        font-size: 14px;
+        color: gray;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <h2 class="search-header">Search Users</h2>
+    
+    <form method="GET" action="{% url 'search_users' %}" class="search-form">
+        <input type="text" name="q" placeholder="Search by username or email..." value="{{ query }}" class="search-input">
+        <button type="submit" class="search-button">🔍</button>
+    </form>
+
+    {% if results %}
+        <div class="user-list">
+            {% for user in results %}
+                <div class="user-card">
+                    <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="user-img">
+                    <div class="user-info">
+                        <a href="{% url 'search_profile_page' user.username %}" class="user-link">{{ user.username }}</a>
+                        <p class="user-email">{{ user.email }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No users found.</p>
+    {% endif %}
+</div>
+{% endblock %}

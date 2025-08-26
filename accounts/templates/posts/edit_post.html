@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'editpost.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="header">Edit Post</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Changes</button>
+    </form>
+    <a href="{% url 'post_detail' post.id %}" class="cancel-link">Cancel</a>
+</div>
+{% endblock %}

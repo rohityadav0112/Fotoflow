@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{group.name}} Chat Room{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'chat.css' %}">{% endblock %}
+{% block oldblock %}
+<h3>{{group.name}}: Group Chat</h3>
+<a href="{% url "group_detail" group.id %}">group Detail</a>
+<div id="chat-messages" style="border:1px solid #ccc; padding:10px; height:300px; overflow-y:scroll;">
+    <!-- Previous Messages will come here via JS WebSocket -->
+</div>
+
+<!-- Send Message -->
+<input type="text" id="message-input" placeholder="Type your message...">
+<button onclick="sendmessage()">Send</button>
+{% endblock %}
+
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header"><a href="{% url "group_detail" group.id %}">{{group.name}}</a></div>
+    
+    <!--Chat Message-->
+    <div class="chat-box" id="chat-box">
+        {% for chat in  chats%}
+        <div class="message {% if chat.sender == request.user %}sent{% else %}received{% endif %}" 
+             data-id="{{ chat.id }}" 
+             ondblclick="likeMessage({{ chat.id }})">
+        <strong>{{chat.sender.username}}</strong>:
+        {% if chat.reply_to %}
+        <div class="reply">↩️ Replying to: {{ chat.reply_to.text }}</div>
+
+        {% endif %}
+        {% if chat.is_deleted %}
+        <p class="deleted-message">This message was deleted1</p>
+        {% else %}
+        <p id="msg-text-{{ chat.id }}">{{ chat.text }}</p>
+        {% endif %}
+
+        <small>{{ chat.timestamp|date:"H:i:s" }}</small>
+
+        <span class="actions">
+            <button class="delete-btn" onclick="confirmdelete({{chat.id}}, '{{chat.sender.username}}')">🗑</button>
+            <button class="class" onclick="setReply({{chat.id}}, '{{chat.text}}')">↩️</button>
+        </span>
+        <span class="likes" id="likes--{{chat.id}}">
+            ❤️ {{ chat.likes.count }}
+        </span>
+    </div>
+        {% endfor %}
+</div>
+
+    <!-- Reply Preview -->
+    <div id="reply-section" style="display: none;">
+        Replying to: <span id="reply-text"></span>
+        <button onclick="clearReply()">❌</button>
+    </div>
+
+    <div class="chat-input">
+        <input type="hidden" id="reply-to">
+        <input type="text" id="message-input" placeholder="Type a message.">
+        <button onclick="sendmessage()">Send</button>
+    </div>
+{% endblock %}
+
+{% block WebSocketJS %}
+<script>
+    const userId = "{{ request.user.id }}";
+    const currentUser = "{{request.user.username}}";
+    const groupId = "{{ group.id }}";
+
+    const groupchatSocket = new WebSocket(
+        `ws://${window.location.host}/ws/groupchat/${groupId}/`
+    );
+
+        groupchatSocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+    
+            if (data.action === "delete") {
+                let msgDiv = document.querySelector(`.message[data-id='${data.message_id}']`);
+                if (!msgDiv) return;
+    
+                if (data.delete_type === 'everyone') {
+                    msgDiv.innerHTML = `<p class="deleted-message">This message was deleted.</p>`;
+                } 
+                else if (data.delete_type === 'me') {
+                    msgDiv.style.display = 'none';  // 
+                }
+            }
+            
+            if (data.action === "like") {
+                let likesSpan = document.getElementById(`likes-${data.message_id}`);
+                if (likesSpan) {
+                    likesSpan.innerHTML = `❤️ ${data.likes_count}`;
+                }
+                return;
+            }
+            addMessageToChat(data);
+        }
+    
+    
+        function addMessageToChat(data){
+            console.log('sned ms')
+            const chatBox = document.getElementById("chat-box")
+            if (document.querySelector(`.message[data-id='${data.id}']`)){
+                return;
+            }
+                let messageDiv = document.createElement("div");
+                messageDiv.classList.add("message", data.sender === currentUser ? "sent" : "received");
+                messageDiv.dataset.id = data.id;
+                let content = `<strong>${data.sender}</strong>: `;
+                if (data.reply_to) {
+                    content += `<div class="reply"> to:   ${data.text}  <strong>↩️ Replying:</strong> ${data.reply_to}</div>`; 
+                }
+                content += `<p id="msg-text-${data.id}">${data.text || ""}</p>`; 
+                content += `<small>${new Date().toLocaleTimeString()}</small>`;
+                content += `
+                <span class="actions">
+                    <button class="delete-btn" onclick="confirmdelete(${data.id}, '${data.sender}')">🗑</button>
+                    <button class="reply-btn" onclick="setReply(${data.id})">↩️</button>
+                </span>
+            <span class="likes" id="likes-${data.id}">❤️ ${data.likes || 0}</span>
+        
+            `;
+        
+            messageDiv.innerHTML = content;
+            messageDiv.ondblclick = () => likeMessage(data.id);
+    
+                chatBox.appendChild(messageDiv);
+               // chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    
+    // Text&Reply
+        function sendmessage(){
+            const messageInput = document.getElementById("message-input");
+            const replyTo = document.getElementById("reply-to").value || null;
+            let message = messageInput.value.trim();
+            console.log(replyTo)
+            if (message || replyTo){
+            groupchatSocket.send(JSON.stringify({text: message, reply_to: replyTo}));
+            messageInput.value = "";
+            document.getElementById("reply-to").value = "";
+            }
+    
+        }
+        function setReply(messageId, messageText){
+            document.getElementById("reply-to").value = messageId;
+            document.getElementById("reply-text").innerText = messageText;
+            document.getElementById("reply-section").style.display = "block";
+            document.getElementById("message-input").focus();
+        }
+        function clearReply(){
+            document.getElementById("reply-to").value = "";
+            document.getElementById("reply-section").style.display = "none";
+        }        
+    //////////////////////////
+        function confirmdelete(messageId, sender) {
+            let modal = document.createElement("div");
+            modal.classList.add("delete-modal");
+            let modalContent = `
+                <div class="modal-content"> 
+                    <p>Are you sure you want to delete this message?</p>
+                    ${sender === currentUser ? 
+                    `<button onclick="deleteMessage('${messageId}', 'everyone')">Delete for everyone</button>` : ""}
+                    <button onclick="deleteMessage('${messageId}', 'me')">Delete for me</button>
+                    <button onclick="closeModal()">Cancel</button>
+                </div>
+            `;
+            modal.innerHTML = modalContent;
+            document.body.appendChild(modal);
+        }
+        function deleteMessage(messageId, type) {
+            groupchatSocket.send(JSON.stringify({ action: "delete", message_id: messageId, delete_type: type }));
+            closeModal();
+        }
+        function closeModal() {
+            document.querySelector(".delete-modal").remove();
+        }
+    /////////////////////////////////////////////////////////////////////
+    
+        function likeMessage(messageId) {
+            groupchatSocket.send(JSON.stringify({ action: "like", message_id: messageId }));
+        }
+    
+        document.addEventListener("DOMContentLoaded", function () {
+            const chatBox = document.getElementById("chat-box");
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
+{% endblock %}

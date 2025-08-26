@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h2>Group: {{ group.name }} 
+    {% if is_admin %}
+        <a href="{% url 'add_member' group.id %}">Add Members</a>
+    {% endif %}
+</h2>
+
+
+<!-- Group Profile Picture -->
+{% if group.image %}
+    <img src="{{ group.image.url }}" alt="Group Image" width="100" height="100">
+{% else %}
+    <img src="{% static 'default_group.png' %}" alt="Default Group Image" width="100" height="100">
+{% endif %}
+
+<!-- Group Details -->
+<p>Description: {{ group.description|default:"No Description" }}</p>
+<p>Owner: {{ group.owner.username }}</p>
+<p>Private: {{ group.is_private }}</p>
+
+<hr>
+
+<h3>Group Members:</h3>
+<ul>
+    {% for member in members %}
+        <li>{{ member.user.username }} - {{ member.role }}: 
+        {% if is_admin %}
+            {% if member.user != request.user %}
+                <a href="{% url 'remove_member' group.id member.user.id %}">Remove</a>
+            {% endif %}
+            {% if member.role == 'member' %}
+            <a href="{% url 'promote_member' group.id member.user.id %}">Promote to Admin</a>
+            {% endif %}
+            {% if member.role == 'admin' %}
+            <a href="{% url 'demote_member' group.id member.user.id %}">Demote to Member</a>
+            {% endif %}
+        {% endif %}
+
+        </li>
+    {% empty %}
+        <li>No members in this group.</li>
+    {% endfor %}
+</ul>
+{% if is_admin  %}
+<h3>Pending Join Requests:</h3>
+    <ul>
+        {% for req in join_requests %}
+            <li>
+                {{ req.user.username }} 
+                
+                <form action="{% url 'accept_join_request' group.id req.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Accept</button>
+                </form>
+
+                <form action="{% url 'reject_join_request' group.id req.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Reject</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+<hr>
+
+<!-- Leave Group Option -->
+<form method="post" action="{% url 'leave_group' group.id %}">
+    {% csrf_token %}
+    <button type="submit">Leave Group</button>
+</form>
+
+<hr>
+<a href="{% url "group_chat" group.id %}">Bacck To group Chat</a>
+
+{% endblock %}

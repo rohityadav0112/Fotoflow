@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Edit Comment</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="text" required>{{ comment.text }}</textarea>
+        <button type="submit">Update</button>
+    </form>
+    <a href="{% url 'home_page' %}">Cancel</a>
+{% endblock %}

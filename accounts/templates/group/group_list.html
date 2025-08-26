@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<a href="{% url 'create_group' %}">+ Create New Group</a>
+<h2>Available Groups</h2>
+<div>
+    {% for group in groups %}
+        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+            
+            <!-- Group Image -->
+            {% if group.image %}
+                <img src="{{ group.image.url }}" alt="Group Image" width="80" height="80">
+            {% else %}
+                <img src="{% static 'default_group.png' %}" alt="Default Group Image" width="80" height="80">
+            {% endif %}
+
+            <!-- Group Name -->
+            <h3><a href="{% url "group_detail" group.id %}">{{ group.name }}</a></h3>
+
+
+            <!-- Group Description -->
+            <p>{{ group.description|default:"No Description" }}</p>
+
+            <!-- Group Owner -->
+            <small>Owner: {{ group.owner.username }}</small><br>
+
+            <!-- Private/Public -->
+            {% if group.is_private %}
+                <small>Private Group</small>
+            {% else %}
+                <small>Public Group</small>
+            {% endif %}
+
+            <br><br>
+
+            <!-- Show Join or Go to Chat -->
+            {% if group.id in user_group_ids %}
+            <a href="{% url 'group_chat' group.id %}">Go to Chat</a>
+    
+        {% else %}
+        
+             {% if group.is_private %}
+            
+                {% if group.id in pending_request_ids %}
+                    <p>Join Request Sent. Waiting for admin approval.</p>
+                    <form method="post" action="{% url 'cancel_join_request' group.id request.user.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Cancel Join Request</button>
+                    </form>
+                {% else %}
+                    <form method="post" action="{% url 'join_group' group.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Send Join Request</button>
+                    </form>
+                {% endif %}
+    
+            {% else %} 
+            
+                <form method="post" action="{% url 'join_group' group.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Join Group</button>
+                </form>
+    
+            {% endif %}
+    
+        {% endif %}
+        </div>
+    {% empty %}
+        <p>No Groups Available.</p>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,56 @@
+<!-- notification.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<style>
+    .notification {
+        padding: 10px;
+        border-radius: 8px;
+        background: #f0f0f0;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<h2>🔔 Notifications</h2>
+<div id="notification-list"></div>
+
+<script>
+let isNotified = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const notificationList = document.getElementById("notification-list");
+
+    console.log('notification list')
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/notifications/`);
+    
+    socket.onmessage = function(event) {
+        console.log('notification comming')
+        const data = JSON.parse(event.data);
+
+        const notificationHTML = `
+            <div class="notification">
+                <p><strong>${data.sender}</strong> ${data.text}</p>
+                <small>${new Date(data.timestamp).toLocaleString()}</small>
+                <hr>
+            </div>
+        `;
+        (!isNotified || data.type !== "visit") &&  notificationList.insertAdjacentHTML("afterbegin", notificationHTML);
+        if(data.type === "visit"){
+            isNotified = true;
+        }
+        console.log(data.type)
+    };
+
+    socket.onclose = function() {
+        console.error("Notification socket closed unexpectedly");
+    };
+});
+</script>
+
+
+
+{% endblock %}

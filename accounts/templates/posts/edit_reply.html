@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Edit Reply</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="reply_text">{{ reply.text }}</textarea>
+        <button type="submit">Update Reply</button>
+    </form>
+    <a href="{% url 'home_page' %}">Cancel</a>
+{% endblock %}

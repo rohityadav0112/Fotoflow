@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="follow-requests-container">
+    <h2>Pending Follow Requests</h2>
+
+    {% if pending_requests %}
+        <ul class="request-list">
+            {% for fr in pending_requests %}
+                <li class="request-item">
+                    <strong>{{ fr.request.username }}</strong>
+                    <p>Requested on: {{ fr.timestamp|date:"M d, Y H:i" }}</p>
+                    
+                    <form method="POST" action="{% url 'follow_request_accept' fr.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit">Accept</button>
+                    </form>
+                    
+                    <form method="POST" action="{% url 'follow_request_reject' fr.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit">Reject</button>
+                    </form>
+                    
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No pending follow requests.</p>
+    {% endif %}
+</div>
+{% endblock %}
