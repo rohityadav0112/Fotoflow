@@ -6,3 +6,5 @@ from django.test import TestCase
 
 # for user in User.objects.all():
 #     Profile.objects.get_or_create(user=user)
+
+#print("Rohit")
