@@ -1,3 +1,4 @@
+#import important things
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -182,4 +183,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "piyushyadavji930@gmail.com"  # Replace with your email
 
 EMAIL_HOST_PASSWORD = "ysgt eivy weii webz"
+
 
